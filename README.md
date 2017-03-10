@@ -43,7 +43,13 @@ Use bower
 bower install chrome-extension-async
 ```
 
-Or download chrome-extension-async.js file and include it directly:
+Or download `chrome-extension-async.js` file and include it directly:
 ```html
 <script type="text/javascript" src="chrome-extension-async.js"></script>
 ```
+
+## Alpha Release
+This only 'promisifies' API functions that use callbacks and are not marked as deprecated. 
+No backwards compatibility is attempted.
+
+Each API is added manually (I'm still working through them at the moment, feel free to help) as JS can't spot deprecated or functions with no callbacks itself.
