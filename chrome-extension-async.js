@@ -37,7 +37,12 @@ class AsyncCallbackWrapper {
         return (...args) =>
             new Promise((resolve, reject) => {
                 try {
-                    f(...args, resolve);
+                    f(...args, (...cbArgs) => {
+                        if(chrome.runtime.lastError) // Error may be in chrome.runtime
+                            reject(chrome.runtime.lastError);
+                        else
+                            resolve(...cbArgs); 
+                    });
                 }
                 catch (err) {
                     reject(err);

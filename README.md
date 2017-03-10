@@ -35,3 +35,15 @@ async function doSomething() {
 ```
 
 Chrome supports this new ES2017 syntax, so in extensions we can take full advantage of it.
+
+## Installation
+Use bower
+
+```
+bower install chrome-promise
+```
+
+Or download chrome-extension-async.js file and include it directly:
+```html
+<script type="text/javascript" src="chrome-promise.js"></script>
+```
