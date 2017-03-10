@@ -47,7 +47,7 @@
         promisifyKnownCallbacks(callbackApi, new Set(callbackFunctions));
     }
 
-    /** Same API as chrome.tabs {@link https://developer.chrome.com/extensions/tabs}, but with promises instead of callbacks. */
+    // chrome.tabs https://developer.chrome.com/extensions/tabs
     addAsyncWrappers(chrome.tabs,
         'get', 'getCurrent', 'sendMessage', 'create', 'duplicate',
         'query', 'highlight', 'update', 'move', 'reload', 'remove',
@@ -55,21 +55,21 @@
         'insertCSS', 'setZoom', 'getZoom', 'setZoomSettings',
         'getZoomSettings', 'discard');
 
-    /** Same API as chrome.runtime {@link https://developer.chrome.com/extensions/runtime}, but with promises instead of callbacks. */
+    // chrome.runtime https://developer.chrome.com/extensions/runtime
     addAsyncWrappers(chrome.runtime,
         'getBackgroundPage', 'openOptionsPage', 'setUninstallURL',
         'requestUpdateCheck', 'restartAfterDelay', 'sendMessage',
         'sendNativeMessage', 'getPlatformInfo', 'getPackageDirectoryEntry');
 
+    // StorageArea https://developer.chrome.com/extensions/storage#type-StorageArea
     const knownInStorageArea = ['get', 'getBytesInUse', 'set', 'remove', 'clear'];
-
-    /** Same API as chrome.storage.sync {@link https://developer.chrome.com/extensions/storage#type-StorageArea}, but with promises instead of callbacks. */
     addAsyncWrappers(chrome.storage.sync, ...knownInStorageArea);
-
-    /** Same API as chrome.storage.local {@link https://developer.chrome.com/extensions/storage#type-StorageArea}, but with promises instead of callbacks. */
     addAsyncWrappers(chrome.storage.local, ...knownInStorageArea);
-
-    /** Same API as chrome.storage.managed {@link https://developer.chrome.com/extensions/storage#type-StorageArea}, but with promises instead of callbacks. */
     addAsyncWrappers(chrome.storage.managed, ...knownInStorageArea);
+
+    // chrome.identity https://developer.chrome.com/extensions/identity
+    addAsyncWrappers(chrome.identity,
+        'getAuthToken', 'getProfileUserInfo', 'removeCachedAuthToken', 
+        'launchWebAuthFlow', 'getRedirectURL');
 
 })();
