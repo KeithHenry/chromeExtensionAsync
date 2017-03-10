@@ -1,0 +1,21 @@
+{
+  "name": "chrome-extension-async",
+  "description": "Promise wrapper for the Chrome extension API so that it can be used with async/await rather than callbacks",
+  "main": "chrome-extension-async.js",
+  "authors": [
+    "Keith Henry <keith.henry@evolutionjobs.co.uk>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "chrome",
+    "chrome-extension"
+  ],
+  "homepage": "https://github.com/KeithHenry/chromeExtensionAsync",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

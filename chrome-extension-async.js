@@ -48,11 +48,11 @@ class AsyncCallbackWrapper {
 
 /** Same API as chrome.tabs {@link https://developer.chrome.com/extensions/tabs}, but with promises instead of callbacks. */
 chrome.tabsAsync = new AsyncCallbackWrapper(chrome.tabs, 
-    'get', 'getCurrent',  'sendMessage', 'getSelected', 
-    'getAllInWindow', 'create', 'duplicate', 'query', 'highlight', 
-    'update', 'move', 'reload', 'remove', 'detectLanguage', 
-    'captureVisibleTab', 'executeScript', 'insertCSS', 'setZoom', 
-    'getZoom', 'setZoomSettings', 'getZoomSettings', 'discard');
+    'get', 'getCurrent',  'sendMessage', 'create', 'duplicate', 
+    'query', 'highlight', 'update', 'move', 'reload', 'remove', 
+    'detectLanguage', 'captureVisibleTab', 'executeScript', 
+    'insertCSS', 'setZoom', 'getZoom', 'setZoomSettings', 
+    'getZoomSettings', 'discard');
 
 /** Same API as chrome.runtime {@link https://developer.chrome.com/extensions/runtime}, but with promises instead of callbacks. */
 chrome.runtimeAsync = new AsyncCallbackWrapper(chrome.runtime, 
