@@ -54,3 +54,8 @@ This only 'promisifies' API functions that use callbacks and are not marked as d
 No backwards compatibility is attempted.
 
 Each API is added manually (I'm still working through them at the moment, feel free to help) as JS can't spot deprecated or functions with no callbacks itself.
+
+### 2.0.0
+Breaking changes, as in the initial release this created a new class that wrapped the entire API.
+
+In 2.0.0 this was changed to just add the `...Async` functions to the existing API instead.
