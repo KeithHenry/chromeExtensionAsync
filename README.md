@@ -6,6 +6,8 @@ However, Chrome now supports `async` and `await` keywords.
 
 This library wraps Chrome extension API callback methods in promises, so that they can be called with `async` and `await`.
 
+Once activated against the Chrome API each callback function gets a Promise version, so if `apiMethod` requires a callback `apiMethodAsync` will return a `Promise` instead.
+
 ## Examples
 For instance, to get the current active tab:
 
@@ -25,7 +27,7 @@ This is replaced with:
 
 ```javascript
 async function doSomething() {
-    const tabs = await chrome.tabsAsync.query({ active: true, currentWindow: true });
+    const tabs = await chrome.tabs.queryAsync({ active: true, currentWindow: true });
     const activeTab = tabs[0];
 
     // Do stuff with activeTab...
@@ -34,11 +36,10 @@ async function doSomething() {
 }
 ```
 
-Chrome supports this new ES2017 syntax, so in extensions we can take full advantage of it.
+Chrome supports ES2017 syntax, so in extensions we can take full advantage of it.
 
 ## Installation
 Use bower
-
 ```
 bower install chrome-extension-async
 ```
