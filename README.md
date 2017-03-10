@@ -40,10 +40,10 @@ Chrome supports this new ES2017 syntax, so in extensions we can take full advant
 Use bower
 
 ```
-bower install chrome-promise
+bower install chrome-extension-async
 ```
 
 Or download chrome-extension-async.js file and include it directly:
 ```html
-<script type="text/javascript" src="chrome-promise.js"></script>
+<script type="text/javascript" src="chrome-extension-async.js"></script>
 ```
