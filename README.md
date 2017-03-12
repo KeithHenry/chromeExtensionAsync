@@ -23,7 +23,7 @@ function startDoSomething(callback) {
 }
 ```
 
-This is replaced with:
+Instead use `await`:
 
 ```javascript
 async function doSomething() {

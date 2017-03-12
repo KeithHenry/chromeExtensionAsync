@@ -8,7 +8,10 @@
   "license": "MIT",
   "keywords": [
     "chrome",
-    "chrome-extension"
+    "chrome-extension",
+    "extension",
+    "promise",
+    "async-await"
   ],
   "homepage": "https://github.com/KeithHenry/chromeExtensionAsync",
   "ignore": [
