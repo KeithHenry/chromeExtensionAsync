@@ -4,8 +4,8 @@
     'use strict';
 
     /** Wrap a function with a callback with a Promise.
-     * @param f The function to wrap, should be pattern: withCallback(arg1, arg2, ... argN, callback).
-     * @returns Promise that resolves when the callback fires. */
+     * @param f {function} The function to wrap, should be pattern: withCallback(arg1, arg2, ... argN, callback).
+     * @returns {Promise} Promise that resolves when the callback fires. */
     function promisify(f) {
         return (...args) =>
             new Promise((resolve, reject) => {
@@ -24,8 +24,8 @@
     }
 
     /** Set all the own-properties to this, wrap any known to be callbacks in a Promise.
-     * @param o {object} The instance to copy members from.
-     * @param known {Set} The names of any member functions that should be wrapped in promises. */
+     * @param {object} o The instance to copy members from.
+     * @param {Set} known The names of any member functions that should be wrapped in promises. */
     function promisifyKnownCallbacks(o, known) {
         for (let p in o) {
             if (!o.hasOwnProperty(p))
@@ -41,8 +41,8 @@
     }
 
     /** Create a promise API from a callback one.
-     * @param callbackApi {object} The callback API to 'promisify'
-     * @param callbackFunctions {string[]} The names of functions with the pattern: withCallback(arg1, arg2, ... argN, callback) */
+     * @param {object} callbackApi The callback API to 'promisify'
+     * @param {string[]} callbackFunctions The names of functions with the pattern: withCallback(arg1, arg2, ... argN, callback) */
     function addAsyncWrappers(callbackApi, ...callbackFunctions) {
         promisifyKnownCallbacks(callbackApi, new Set(callbackFunctions));
     }
