@@ -125,6 +125,9 @@
     // chrome.desktopCapture https://developer.chrome.com/extensions/desktopCapture
     addAsyncWrappers(chrome.desktopCapture, 'chooseDesktopMedia');
 
+    // chrome.topSites https://developer.chrome.com/extensions/topSites#method-get
+    addAsyncWrappers(chrome.topSites, 'get');
+
     if (chrome.storage) {
         // StorageArea https://developer.chrome.com/extensions/storage#type-StorageArea
         // Todo: this should extend StorageArea.prototype instead
