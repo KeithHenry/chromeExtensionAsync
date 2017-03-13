@@ -49,7 +49,7 @@ Or download `chrome-extension-async.js` file and include it directly:
 <script type="text/javascript" src="chrome-extension-async.js"></script>
 ```
 
-## Alpha Release
+## Release Notes
 This only 'promisifies' API functions that use callbacks and are not marked as deprecated. 
 No backwards compatibility is attempted.
 
