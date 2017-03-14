@@ -55,7 +55,34 @@ No backwards compatibility is attempted.
 
 Each API is added manually (I'm still working through them at the moment, feel free to help) as JS can't spot deprecated or functions with no callbacks itself.
 
+Supported API:
+
+- [chrome.tabs](https://developer.chrome.com/extensions/tabs)
+- [chrome.runtime](https://developer.chrome.com/extensions/runtime)
+- [chrome.permissions](https://developer.chrome.com/extensions/permissions)
+- [chrome.identity](https://developer.chrome.com/extensions/identity)
+- [chrome.bookmarks](https://developer.chrome.com/extensions/bookmarks)
+- [chrome.browserAction](https://developer.chrome.com/extensions/browserAction)
+- [chrome.pageAction](https://developer.chrome.com/extensions/pageAction)
+- [chrome.browsingData](https://developer.chrome.com/extensions/browsingData)
+- [chrome.downloads](https://developer.chrome.com/extensions/downloads)
+- [chrome.history](https://developer.chrome.com/extensions/history)
+- [chrome.alarms](https://developer.chrome.com/extensions/alarms)
+- [chrome.i18n](https://developer.chrome.com/extensions/i18n)
+- [chrome.commands](https://developer.chrome.com/extensions/commands#method-getAll)
+- [chrome.contextMenus](https://developer.chrome.com/extensions/contextMenus)
+- [chrome.extension](https://developer.chrome.com/extensions/extension)
+- [chrome.cookies](https://developer.chrome.com/extensions/cookies)
+- [chrome.windows](https://developer.chrome.com/extensions/windows)
+- [chrome.debugger](https://developer.chrome.com/extensions/debugger)
+- [chrome.desktopCapture](https://developer.chrome.com/extensions/desktopCapture)
+- [chrome.topSites](https://developer.chrome.com/extensions/topSites#method-get)
+- [StorageArea](https://developer.chrome.com/extensions/storage#type-StorageArea)
+- [ContentSetting](https://developer.chrome.com/extensions/contentSettings#type-ContentSetting)
+
 ### 2.0.0
 Breaking changes, as in the initial release this created a new class that wrapped the entire API.
 
 In 2.0.0 this was changed to just add the `...Async` functions to the existing API instead.
+
+
