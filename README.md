@@ -6,7 +6,7 @@ However, Chrome now supports `async` and `await` keywords.
 
 This library wraps Chrome extension API callback methods in promises, so that they can be called with `async` and `await`.
 
-Once activated against the Chrome API each callback function gets a Promise version, so if `apiMethod` requires a callback `apiMethodAsync` will return a `Promise` instead.
+Once activated against the Chrome API each callback function gets a `Promise` version.
 
 ## Examples
 For instance, to get the current active tab:
@@ -14,11 +14,23 @@ For instance, to get the current active tab:
 ```javascript
 function startDoSomething(callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        var activeTab = tabs[0];
+        
+        // Check API for any errors thrown
+        if (chrome.runtime.lastError) {
+            // Handle errors from chrome.tabs.query
+        }
+        else {
+            try {
+                var activeTab = tabs[0];
 
-        // Do stuff with activeTab...
+                // Do stuff with activeTab...
 
-        callback(activeTab);
+                callback(activeTab);
+            }
+            catch(err) {
+                // Handle errors from my code
+            }
+        }
     });
 }
 ```
@@ -27,12 +39,17 @@ Instead use `await`:
 
 ```javascript
 async function doSomething() {
-    const tabs = await chrome.tabs.queryAsync({ active: true, currentWindow: true });
-    const activeTab = tabs[0];
+    try {
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        const activeTab = tabs[0];
 
-    // Do stuff with activeTab...
+        // Do stuff with activeTab...
 
-    return activeTab;
+        return activeTab;
+    }
+    catch(err) {
+        // Handle errors from chrome.tabs.query or my code
+    }
 }
 ```
 
@@ -53,7 +70,7 @@ Or download `chrome-extension-async.js` file and include it directly:
 This only 'promisifies' API functions that use callbacks and are not marked as deprecated. 
 No backwards compatibility is attempted.
 
-Each API is added manually (I'm still working through them at the moment, feel free to help) as JS can't spot deprecated or functions with no callbacks itself.
+Each API is added manually as JS can't spot deprecated or functions with no callbacks itself.
 
 Supported API:
 
@@ -80,9 +97,25 @@ Supported API:
 - [StorageArea](https://developer.chrome.com/extensions/storage#type-StorageArea)
 - [ContentSetting](https://developer.chrome.com/extensions/contentSettings#type-ContentSetting)
 
-### 2.0.0
-Breaking changes, as in the initial release this created a new class that wrapped the entire API.
+Pull requests with additional API gratefully received.
 
-In 2.0.0 this was changed to just add the `...Async` functions to the existing API instead.
+### 3.0.0
+3.0.0 is a breaking change from v1 and v2: now the original API is wrapped by an identical method that can be called with either old or new syntax.
+Callbacks can still be used on the same methods, and will fire before the promise resolves.
+Any error thrown inside the callback function will cause the promise to reject.
 
+You can use both a callback and `await` if you want to work with existing API code, but also want the `try`-`catch` support:
 
+```javascript
+async function startDoSomethingHybrid(callback) {
+    try{
+        // Using await means any exception is passed to the catch, even from the callback
+        await chrome.tabs.query({ active: true, currentWindow: true }, tabs => callback(tabs[0]));
+    }
+    catch(err) {
+        // Handle errors thrown by the API or by the callback
+    }
+}
+```
+
+Older versions added a `...Async` suffix to either the function (2.0.0) or the API class (1.0.0).

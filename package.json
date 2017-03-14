@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-async",
-  "version": "2.1.2",
+  "version": "3.0.0",
   "description": "Promise wrapper for the Chrome extension API so that it can be used with async/await rather than callbacks",
   "main": "chrome-extension-async.js",
   "repository": {

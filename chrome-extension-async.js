@@ -62,7 +62,7 @@
             if (typeof m === 'function' &&
                 known.has(p)) {
                 // Wrap the source callback function in a promise so that we can call it with await
-                o[p + 'Async'] = promisify(m);
+                o[p] = promisify(m); // new in 3, for 2 support change to p + 'Async'
             }
         }
     }
