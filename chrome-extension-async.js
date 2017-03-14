@@ -4,23 +4,50 @@
     'use strict';
 
     /** Wrap a function with a callback with a Promise.
-     * @param f {function} The function to wrap, should be pattern: withCallback(arg1, arg2, ... argN, callback).
+     * @param {function} f The function to wrap, should be pattern: withCallback(arg1, arg2, ... argN, callback).
      * @returns {Promise} Promise that resolves when the callback fires. */
     function promisify(f) {
-        return (...args) =>
-            new Promise((resolve, reject) => {
+        return (...args) => {
+            let safeArgs = args;
+            let callback;
+            // The Chrome API functions all use arguments, so we can't use f.length to check
+
+            // If there is a last arg
+            if (args && args.length > 0) {
+
+                // ... and the last arg is a function
+                const last = args[args.length - 1];
+                if (typeof last === 'function') {
+                    // Trim the last callback arg if it's been passed
+                    safeArgs = args.slice(0, args.length - 1);
+                    callback = last;
+                }
+            }
+
+            // Return a promise
+            return new Promise((resolve, reject) => {
                 try {
-                    f(...args, (...cbArgs) => {
+                    // Try to run the original function, with the trimmed args list
+                    f(...safeArgs, (...cbArgs) => {
+
+                        // If a callback was passed at the end of the original arguments
+                        if (callback) {
+                            // Don't allow a bug in the callback to stop the promise resolving
+                            try { callback(...cbArgs); }
+                            catch (cbErr) { reject(cbErr); }
+                        }
+
+                        // Chrome extensions always fire the callback, but populate chrome.runtime.lastError with exception details
                         if (chrome.runtime.lastError)
-                            reject(chrome.runtime.lastError);
+                            // Return as an error for the awaited catch block
+                            reject(new Error(chrome.runtime.lastError.message || `Error thrown by API ${chrome.runtime.lastError}`));
                         else
                             resolve(...cbArgs);
                     });
                 }
-                catch (err) {
-                    reject(err);
-                }
+                catch (err) { reject(err); }
             });
+        }
     }
 
     /** Set all the own-properties to this, wrap any known to be callbacks in a Promise.
