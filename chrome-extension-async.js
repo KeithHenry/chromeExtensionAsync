@@ -41,8 +41,16 @@
                         if (chrome.runtime.lastError)
                             // Return as an error for the awaited catch block
                             reject(new Error(chrome.runtime.lastError.message || `Error thrown by API ${chrome.runtime.lastError}`));
-                        else
-                            resolve(...cbArgs);
+                        else {
+                            // Success, resolve with the callback parameters
+                            // Promise.resolve only takes 1 param, so if more passed use an array
+                            if (!cbArgs)
+                                resolve();
+                            else if (cbArgs.length === 1)
+                                resolve(cbArgs[0]);
+                            else
+                                resolve(cbArgs);
+                        }
                     });
                 }
                 catch (err) { reject(err); }
