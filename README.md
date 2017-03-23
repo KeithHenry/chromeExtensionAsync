@@ -61,12 +61,12 @@ Some callbacks take multiple parameters - in these cases the `Promise` will be a
 async function checkUpdate() {
     try {
         // API is chrome.runtime.requestUpdateCheck(function (status, details) { ... });
-        // Instead we use deconstruction assignment and await
+        // Instead we use deconstruction-assignment and await
         const { status, details } = await chrome.runtime.requestUpdateCheck();
         alert(`Status: ${status}\nDetails: ${JSON.stringify(details)}`);
     }
     catch(err) {
-        // Handle errors from chrome.tabs.query or my code
+        // Handle errors from chrome.runtime.requestUpdateCheck or my code
     }
 }
 ```
