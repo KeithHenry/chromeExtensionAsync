@@ -5,8 +5,9 @@
 
     /** Wrap a function with a callback with a Promise.
      * @param {function} f The function to wrap, should be pattern: withCallback(arg1, arg2, ... argN, callback).
+     * @param {function} parseCB Optional function to parse multiple callback parameters into a single object.
      * @returns {Promise} Promise that resolves when the callback fires. */
-    function promisify(f) {
+    function promisify(f, parseCB) {
         return (...args) => {
             let safeArgs = args;
             let callback;
@@ -42,9 +43,11 @@
                             // Return as an error for the awaited catch block
                             reject(new Error(chrome.runtime.lastError.message || `Error thrown by API ${chrome.runtime.lastError}`));
                         else {
-                            // Success, resolve with the callback parameters
-                            // Promise.resolve only takes 1 param, so if more passed use an array
-                            if (!cbArgs)
+                            if (parseCB) {
+                                const cbObj = parseCB(...cbArgs);
+                                resolve(cbObj);
+                            }
+                            else if (!cbArgs)
                                 resolve();
                             else if (cbArgs.length === 1)
                                 resolve(cbArgs[0]);
@@ -58,136 +61,171 @@
         }
     }
 
-    /** Set all the own-properties to this, wrap any known to be callbacks in a Promise.
-     * @param {object} o The instance to copy members from.
-     * @param {Set} known The names of any member functions that should be wrapped in promises. */
-    function promisifyKnownCallbacks(o, known) {
-        for (let p in o) {
-            if (!o.hasOwnProperty(p))
-                continue; // Don't bother with .toString() etc
+    /** Promisify all the known functions in the map 
+     * @param {object} api The Chrome native API to extend
+     * @param {Array} apiMap Collection of sub-API and functions to promisify */
+    function applyMap(api, apiMap) {
+        if (!api)
+            // Not supported by current permissions
+            return;
 
-            const m = o[p];
-            if (typeof m === 'function' &&
-                known.has(p)) {
-                // Wrap the source callback function in a promise so that we can call it with await
-                o[p] = promisify(m); // new in 3, for 2 support change to p + 'Async'
+        for (let funcDef of apiMap) {
+            let funcName;
+            if (typeof funcDef === 'string')
+                funcName = funcDef;
+            else {
+                funcName = funcDef.n;
             }
+
+            if (!api.hasOwnProperty(funcName))
+                // Member not in API
+                continue;
+
+            const m = api[funcName];
+            if (typeof m === 'function')
+                // This is a function, wrap in a promise
+                api[funcName] = promisify(m, funcDef.cb);
+            else
+                // Sub-API, recurse this func with the mapped props
+                applyMap(m, funcDef.props);
         }
     }
 
-    /** Create a promise API from a callback one.
-     * @param {object} callbackApi The callback API to 'promisify'
-     * @param {string[]} callbackFunctions The names of functions with the pattern: withCallback(arg1, arg2, ... argN, callback) */
-    function addAsyncWrappers(callbackApi, ...callbackFunctions) {
-        if (callbackApi)
-            promisifyKnownCallbacks(callbackApi, new Set(callbackFunctions));
+    /** Apply promise-maps to the Chrome native API.
+     * @param {object} apiMaps The API to apply. */
+    function applyMaps(apiMaps) {
+        for (let apiName in apiMaps) {
+            const callbackApi = chrome[apiName];
+            if (!callbackApi)
+                // Not supported by current permissions
+                continue;
+
+            const apiMap = apiMaps[apiName];
+            applyMap(callbackApi, apiMap);
+        }
     }
 
-    // chrome.tabs https://developer.chrome.com/extensions/tabs
-    addAsyncWrappers(chrome.tabs,
-        'get', 'getCurrent', 'sendMessage', 'create', 'duplicate',
-        'query', 'highlight', 'update', 'move', 'reload', 'remove',
-        'detectLanguage', 'captureVisibleTab', 'executeScript',
-        'insertCSS', 'setZoom', 'getZoom', 'setZoomSettings',
-        'getZoomSettings', 'discard');
+    // accessibilityFeatures https://developer.chrome.com/extensions/accessibilityFeatures
+    const knownA11ySetting = ['get', 'set', 'clear'];
 
-    // chrome.runtime https://developer.chrome.com/extensions/runtime
-    addAsyncWrappers(chrome.runtime,
-        'getBackgroundPage', 'openOptionsPage', 'setUninstallURL',
-        'requestUpdateCheck', 'restartAfterDelay', 'sendMessage',
-        'sendNativeMessage', 'getPlatformInfo', 'getPackageDirectoryEntry');
+    // ContentSetting https://developer.chrome.com/extensions/contentSettings#type-ContentSetting
+    const knownInContentSetting = ['clear', 'get', 'set', 'getResourceIdentifiers'];
 
-    // chrome.permissions https://developer.chrome.com/extensions/permissions
-    addAsyncWrappers(chrome.permissions, 'getAll', 'contains', 'request', 'remove');
+    // StorageArea https://developer.chrome.com/extensions/storage#type-StorageArea
+    const knownInStorageArea = ['get', 'getBytesInUse', 'set', 'remove', 'clear'];
 
-    // chrome.identity https://developer.chrome.com/extensions/identity
-    addAsyncWrappers(chrome.identity,
-        'getAuthToken', 'getProfileUserInfo', 'removeCachedAuthToken',
-        'launchWebAuthFlow', 'getRedirectURL');
-
-    // chrome.bookmarks https://developer.chrome.com/extensions/bookmarks
-    addAsyncWrappers(chrome.bookmarks,
-        'get', 'getChildren', 'getRecent', 'getTree', 'getSubTree',
-        'search', 'create', 'move', 'update', 'remove', 'removeTree');
-
-    // chrome.browserAction https://developer.chrome.com/extensions/browserAction
-    addAsyncWrappers(chrome.browserAction,
-        'getTitle', 'setIcon', 'getPopup', 'getBadgeText', 'getBadgeBackgroundColor');
-
-    // chrome.pageAction https://developer.chrome.com/extensions/pageAction
-    addAsyncWrappers(chrome.pageAction, 'getTitle', 'setIcon', 'getPopup');
-
-    // chrome.browsingData https://developer.chrome.com/extensions/browsingData
-    addAsyncWrappers(chrome.browsingData,
-        'settings', 'remove', 'removeAppcache', 'removeCache',
-        'removeCookies', 'removeDownloads', 'removeFileSystems',
-        'removeFormData', 'removeHistory', 'removeIndexedDB',
-        'removeLocalStorage', 'removePluginData', 'removePasswords',
-        'removeWebSQL');
-
-    // chrome.downloads https://developer.chrome.com/extensions/downloads
-    addAsyncWrappers(chrome.downloads,
-        'download', 'search', 'pause', 'resume', 'cancel',
-        'getFileIcon', 'erase', 'removeFile', 'acceptDanger');
-
-    // chrome.history https://developer.chrome.com/extensions/history
-    addAsyncWrappers(chrome.history, 'search', 'getVisits', 'addUrl', 'deleteUrl', 'deleteRange', 'deleteAll');
-
-    // chrome.alarms https://developer.chrome.com/extensions/alarms
-    addAsyncWrappers(chrome.alarms, 'get', 'getAll', 'clear', 'clearAll');
-
-    // chrome.i18n https://developer.chrome.com/extensions/i18n
-    addAsyncWrappers(chrome.i18n, 'getAcceptLanguages', 'detectLanguage');
-
-    // chrome.commands https://developer.chrome.com/extensions/commands#method-getAll
-    addAsyncWrappers(chrome.commands, 'getAll');
-
-    // chrome.contextMenus https://developer.chrome.com/extensions/contextMenus
-    addAsyncWrappers(chrome.contextMenus, 'create', 'update', 'remove', 'removeAll');
-
-    // chrome.extension https://developer.chrome.com/extensions/extension (mostly deprecated in favour of runtime)
-    addAsyncWrappers(chrome.extension, 'isAllowedIncognitoAccess', 'isAllowedFileSchemeAccess');
-
-    // chrome.cookies https://developer.chrome.com/extensions/cookies
-    addAsyncWrappers(chrome.cookies, 'get', 'getAll', 'set', 'remove', 'getAllCookieStores');
-
-    // chrome.windows https://developer.chrome.com/extensions/windows
-    addAsyncWrappers(chrome.windows, 'get', 'getCurrent', 'getLastFocused', 'getAll', 'create', 'update', 'remove');
-
-    // chrome.debugger https://developer.chrome.com/extensions/debugger
-    addAsyncWrappers(chrome.debugger, 'attach', 'detach', 'sendCommand', 'getTargets')
-
-    // chrome.desktopCapture https://developer.chrome.com/extensions/desktopCapture
-    addAsyncWrappers(chrome.desktopCapture, 'chooseDesktopMedia');
-
-    // chrome.topSites https://developer.chrome.com/extensions/topSites#method-get
-    addAsyncWrappers(chrome.topSites, 'get');
-
-    if (chrome.storage) {
-        // StorageArea https://developer.chrome.com/extensions/storage#type-StorageArea
-        // Todo: this should extend StorageArea.prototype instead
-        const knownInStorageArea = ['get', 'getBytesInUse', 'set', 'remove', 'clear'];
-        addAsyncWrappers(chrome.storage.sync, ...knownInStorageArea);
-        addAsyncWrappers(chrome.storage.local, ...knownInStorageArea);
-        addAsyncWrappers(chrome.storage.managed, ...knownInStorageArea);
-    }
-
-    if (chrome.contentSettings) {
-        // ContentSetting https://developer.chrome.com/extensions/contentSettings#type-ContentSetting
-        // Todo: this should extend ContentSetting.prototype instead
-        const knownInContentSetting = ['clear', 'get', 'set', 'getResourceIdentifiers'];
-        addAsyncWrappers(chrome.contentSettings.cookies, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.images, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.javascript, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.location, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.plugins, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.popups, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.notifications, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.fullscreen, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.mouselock, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.microphone, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.camera, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.unsandboxedPlugins, ...knownInContentSetting);
-        addAsyncWrappers(chrome.contentSettings.automaticDownloads, ...knownInContentSetting);
-    }
+    /** Map of API functions that follow the callback pattern that we can promisd */
+    applyMaps({
+        accessibilityFeatures: [  // Todo: this should extend AccessibilityFeaturesSetting.prototype instead
+            { n: 'spokenFeedback', props: knownA11ySetting },
+            { n: 'largeCursor', props: knownA11ySetting },
+            { n: 'stickyKeys', props: knownA11ySetting },
+            { n: 'highContrast', props: knownA11ySetting },
+            { n: 'screenMagnifier', props: knownA11ySetting },
+            { n: 'autoclick', props: knownA11ySetting },
+            { n: 'virtualKeyboard', props: knownA11ySetting },
+            { n: 'animationPolicy', props: knownA11ySetting }],
+        alarms: ['get', 'getAll', 'clear', 'clearAll'],
+        bookmarks: [
+            'get', 'getChildren', 'getRecent', 'getTree', 'getSubTree',
+            'search', 'create', 'move', 'update', 'remove', 'removeTree'],
+        browser: ['openTab'],
+        browserAction: [
+            'getTitle', 'setIcon', 'getPopup', 'getBadgeText', 'getBadgeBackgroundColor'],
+        browsingData: [
+            'settings', 'remove', 'removeAppcache', 'removeCache',
+            'removeCookies', 'removeDownloads', 'removeFileSystems',
+            'removeFormData', 'removeHistory', 'removeIndexedDB',
+            'removeLocalStorage', 'removePluginData', 'removePasswords',
+            'removeWebSQL'],
+        commands: ['getAll'],
+        contentSettings: [  // Todo: this should extend ContentSetting.prototype instead
+            { n: 'cookies', props: knownInContentSetting },
+            { n: 'images', props: knownInContentSetting },
+            { n: 'javascript', props: knownInContentSetting },
+            { n: 'location', props: knownInContentSetting },
+            { n: 'plugins', props: knownInContentSetting },
+            { n: 'popups', props: knownInContentSetting },
+            { n: 'notifications', props: knownInContentSetting },
+            { n: 'fullscreen', props: knownInContentSetting },
+            { n: 'mouselock', props: knownInContentSetting },
+            { n: 'microphone', props: knownInContentSetting },
+            { n: 'camera', props: knownInContentSetting },
+            { n: 'unsandboxedPlugins', props: knownInContentSetting },
+            { n: 'automaticDownloads', props: knownInContentSetting }],
+        contextMenus: ['create', 'update', 'remove', 'removeAll'],
+        cookies: ['get', 'getAll', 'set', 'remove', 'getAllCookieStores'],
+        debugger: ['attach', 'detach', 'sendCommand', 'getTargets'],
+        desktopCapture: ['chooseDesktopMedia'],
+        // TODO: devtools.*
+        documentScan: ['scan'],
+        downloads: [
+            'download', 'search', 'pause', 'resume', 'cancel',
+            'getFileIcon', 'erase', 'removeFile', 'acceptDanger'],
+        enterprise: [{ n: 'platformKeys', props: ['getToken', 'getCertificates', 'importCertificate', 'removeCertificate'] }],
+        extension: ['isAllowedIncognitoAccess', 'isAllowedFileSchemeAccess'], // mostly deprecated in favour of runtime
+        fileBrowserHandler: ['selectFile'],
+        fileSystemProvider: ['mount', 'unmount', 'getAll', 'get', 'notify'],
+        fontSettings: [
+            'setDefaultFontSize', 'getFont', 'getDefaultFontSize', 'getMinimumFontSize',
+            'setMinimumFontSize', 'getDefaultFixedFontSize', 'clearDefaultFontSize',
+            'setDefaultFixedFontSize', 'clearFont', 'setFont', 'clearMinimumFontSize',
+            'getFontList', 'clearDefaultFixedFontSize'],
+        gcm: ['register', 'unregister', 'send'],
+        history: ['search', 'getVisits', 'addUrl', 'deleteUrl', 'deleteRange', 'deleteAll'],
+        i18n: ['getAcceptLanguages', 'detectLanguage'],
+        identity: [
+            'getAuthToken', 'getProfileUserInfo', 'removeCachedAuthToken',
+            'launchWebAuthFlow', 'getRedirectURL'],
+        idle: ['queryState'],
+        input: [{
+            n: 'ime', props: [
+                'setMenuItems', 'commitText', 'setCandidates', 'setComposition', 'updateMenuItems',
+                'setCandidateWindowProperties', 'clearComposition', 'setCursorPosition', 'sendKeyEvents',
+                'deleteSurroundingText']
+        }],
+        management: [
+            'setEnabled', 'getPermissionWarningsById', 'get', 'getAll',
+            'getPermissionWarningsByManifest', 'launchApp', 'uninstall', 'getSelf',
+            'uninstallSelf', 'createAppShortcut', 'setLaunchType', 'generateAppForLink'],
+        networking: [{ n: 'config', props: ['setNetworkFilter', 'finishAuthentication'] }],
+        notifications: ['create', 'update', 'clear', 'getAll', 'getPermissionLevel'],
+        pageAction: ['getTitle', 'setIcon', 'getPopup'],
+        pageCapture: ['saveAsMHTML'],
+        permissions: ['getAll', 'contains', 'request', 'remove'],
+        platformKeys: ['selectClientCertificates', 'verifyTLSServerCertificate',
+            { n: "getKeyPair", cb: (publicKey, privateKey) => { return { publicKey, privateKey }; } }],
+        runtime: [
+            'getBackgroundPage', 'openOptionsPage', 'setUninstallURL',
+            'restartAfterDelay', 'sendMessage',
+            'sendNativeMessage', 'getPlatformInfo', 'getPackageDirectoryEntry',
+            { n: "requestUpdateCheck", cb: (status, details) => { return { status, details }; } }],
+        scriptBadge: ['getPopup'],
+        sessions: ['getRecentlyClosed', 'getDevices', 'restore'],
+        storage: [          // Todo: this should extend StorageArea.prototype instead
+            { n: 'sync', props: knownInStorageArea },
+            { n: 'local', props: knownInStorageArea },
+            { n: 'managed', props: knownInStorageArea }],
+        socket: [
+            'create', 'connect', 'bind', 'read', 'write', 'recvFrom', 'sendTo',
+            'listen', 'accept', 'setKeepAlive', 'setNoDelay', 'getInfo', 'getNetworkList'],
+        system: [
+            { n: 'cpu', props: ['getInfo'] },
+            { n: 'memory', props: ['getInfo'] },
+            { n: 'storage', props: ['getInfo', 'ejectDevice', 'getAvailableCapacity'] }],
+        tabCapture: ['capture', 'getCapturedTabs'],
+        tabs: [
+            'get', 'getCurrent', 'sendMessage', 'create', 'duplicate',
+            'query', 'highlight', 'update', 'move', 'reload', 'remove',
+            'detectLanguage', 'captureVisibleTab', 'executeScript',
+            'insertCSS', 'setZoom', 'getZoom', 'setZoomSettings',
+            'getZoomSettings', 'discard'],
+        topSites: ['get'],
+        tts: ['isSpeaking', 'getVoices', 'speak'],
+        types: ['set', 'get', 'clear'],
+        vpnProvider: ['createConfig', 'destroyConfig', 'setParameters', 'sendPacket', 'notifyConnectionStateChanged'],
+        wallpaper: ['setWallpaper'],
+        webNavigation: ['getFrame', 'getAllFrames', 'handlerBehaviorChanged'],
+        windows: ['get', 'getCurrent', 'getLastFocused', 'getAll', 'create', 'update', 'remove']
+    });
 })();

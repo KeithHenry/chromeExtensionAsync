@@ -8,6 +8,8 @@ This library wraps Chrome extension API callback methods in promises, so that th
 
 Once activated against the Chrome API each callback function gets a `Promise` version.
 
+Chrome supports ES2017 syntax, so in extensions we can take full advantage of it.
+
 ## Examples
 For instance, to get the current active tab:
 
@@ -53,7 +55,21 @@ async function doSomething() {
 }
 ```
 
-Chrome supports ES2017 syntax, so in extensions we can take full advantage of it.
+Some callbacks take multiple parameters - in these cases the `Promise` will be a combined object:
+
+```javascript
+async function checkUpdate() {
+    try {
+        // API is chrome.runtime.requestUpdateCheck(function (status, details) { ... });
+        // Instead we use deconstruction assignment and await
+        const { status, details } = await chrome.runtime.requestUpdateCheck();
+        alert(`Status: ${status}\nDetails: ${JSON.stringify(details)}`);
+    }
+    catch(err) {
+        // Handle errors from chrome.tabs.query or my code
+    }
+}
+```
 
 ## Installation
 Use bower
@@ -65,6 +81,8 @@ Or download `chrome-extension-async.js` file and include it directly:
 ```html
 <script type="text/javascript" src="chrome-extension-async.js"></script>
 ```
+
+TypeScript definitions for the altered API are in `chrome-extension-async.d.ts`
 
 ## Release Notes
 This only 'promisifies' API functions that use callbacks and are not marked as deprecated. 
@@ -94,8 +112,31 @@ Supported API:
 - [chrome.debugger](https://developer.chrome.com/extensions/debugger)
 - [chrome.desktopCapture](https://developer.chrome.com/extensions/desktopCapture)
 - [chrome.topSites](https://developer.chrome.com/extensions/topSites#method-get)
-- [StorageArea](https://developer.chrome.com/extensions/storage#type-StorageArea)
-- [ContentSetting](https://developer.chrome.com/extensions/contentSettings#type-ContentSetting)
+- [chrome.sessions](https://developer.chrome.com/extensions/sessions)
+- [chrome.socket](https://developer.chrome.com/extensions/socket)
+- [chrome.system.cpu](https://developer.chrome.com/extensions/system_cpu)
+- [chrome.system.memory](https://developer.chrome.com/extensions/system_memory)
+- [chrome.system.storage](https://developer.chrome.com/extensions/system_storage)
+- [chrome.tabCapture](https://developer.chrome.com/extensions/tabCapture)
+- [chrome.tts](https://developer.chrome.com/extensions/tts)
+- [chrome.types](https://developer.chrome.com/extensions/types)
+- [chrome.wallpaper](https://developer.chrome.com/extensions/wallpaper#method-setWallpaper)
+- [chrome.platformKeys](https://developer.chrome.com/extensions/platformKeys)
+- [chrome.pageCapture](https://developer.chrome.com/extensions/pageCapture#method-saveAsMHTML)
+- [chrome.webNavigation](https://developer.chrome.com/extensions/webNavigation)
+- [chrome.notifications](https://developer.chrome.com/extensions/notifications)
+- [chrome.networking.config](https://developer.chrome.com/extensions/networking_config)
+- [chrome.management](https://developer.chrome.com/extensions/management)
+- [chrome.input.ime](https://developer.chrome.com/extensions/input_ime)
+- [chrome.idle](https://developer.chrome.com/extensions/idle#method-queryState)
+- [chrome.gcm](https://developer.chrome.com/extensions/gcm)
+- [chrome.fontSettings](https://developer.chrome.com/extensions/fontSettings)
+- [chrome.fileSystemProvider](https://developer.chrome.com/extensions/fileSystemProvider)
+- [chrome.fileBrowserHandler](https://developer.chrome.com/extensions/enterprise_platformKeys)
+- [chrome.enterprise.platformKeys](https://developer.chrome.com/extensions/fileBrowserHandler#method-selectFile)
+- [chrome.documentScan](https://developer.chrome.com/extensions/documentScan#method-scan)
+- [chrome.storage StorageArea](https://developer.chrome.com/extensions/storage#type-StorageArea)
+- [chrome.contentSettings ContentSetting](https://developer.chrome.com/extensions/contentSettings#type-ContentSetting)
 
 Pull requests with additional API gratefully received.
 
