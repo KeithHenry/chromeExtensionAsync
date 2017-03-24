@@ -77,6 +77,11 @@ Use bower
 bower install chrome-extension-async
 ```
 
+Or [npm](https://www.npmjs.com/package/chrome-extension-async)
+```
+npm i chrome-extension-async
+```
+
 Or download `chrome-extension-async.js` file and include it directly:
 ```html
 <script type="text/javascript" src="chrome-extension-async.js"></script>
