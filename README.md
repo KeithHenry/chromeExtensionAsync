@@ -1,4 +1,7 @@
 # Chrome Extension Async
+[![npm version](http://img.shields.io/npm/v/chrome-extension-async.svg)](https://www.npmjs.com/package/chrome-extension-async)
+[![bower version](https://img.shields.io/bower/v/chrome-extension-async.svg)](https://github.com/KeithHenry/chromeExtensionAsync/releases)
+
 Promise wrapper for the Chrome extension API so that it can be used with async/await rather than callbacks
 
 The [Extension API](https://developer.chrome.com/extensions) provided by Chrome uses callbacks. 
