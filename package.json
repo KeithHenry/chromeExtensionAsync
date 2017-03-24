@@ -5,8 +5,19 @@
   "main": "chrome-extension-async.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KeithHenry/chromeExtensionAsync.git"
+    "url": "git+https://github.com/KeithHenry/chromeExtensionAsync.git"
   },
   "author": "Keith Henry <keith.henry@evolutionjobs.co.uk>",
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KeithHenry/chromeExtensionAsync/issues"
+  },
+  "homepage": "https://github.com/KeithHenry/chromeExtensionAsync#readme",
+  "keywords": [
+    "chrome",
+    "chrome-extension",
+    "extension",
+    "promise",
+    "async-await"
+  ]
 }
