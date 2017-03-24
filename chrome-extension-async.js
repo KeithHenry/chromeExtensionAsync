@@ -114,7 +114,7 @@
     // StorageArea https://developer.chrome.com/extensions/storage#type-StorageArea
     const knownInStorageArea = ['get', 'getBytesInUse', 'set', 'remove', 'clear'];
 
-    /** Map of API functions that follow the callback pattern that we can promisd */
+    /** Map of API functions that follow the callback pattern that we can 'promisify' */
     applyMaps({
         accessibilityFeatures: [  // Todo: this should extend AccessibilityFeaturesSetting.prototype instead
             { n: 'spokenFeedback', props: knownA11ySetting },
