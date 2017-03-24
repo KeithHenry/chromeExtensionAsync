@@ -137,6 +137,9 @@ Supported API:
 - [chrome.documentScan](https://developer.chrome.com/extensions/documentScan#method-scan)
 - [chrome.storage StorageArea](https://developer.chrome.com/extensions/storage#type-StorageArea)
 - [chrome.contentSettings ContentSetting](https://developer.chrome.com/extensions/contentSettings#type-ContentSetting)
+- [chrome.sockets.tcp](https://developer.chrome.com/extensions/sockets_tcp)
+- [chrome.sockets.tcpServer](https://developer.chrome.com/extensions/sockets_tcpServer)
+- [chrome.sockets.udp](https://developer.chrome.com/extensions/sockets_udp)
 
 Pull requests with additional API gratefully received.
 

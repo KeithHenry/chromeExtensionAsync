@@ -209,6 +209,16 @@
         socket: [
             'create', 'connect', 'bind', 'read', 'write', 'recvFrom', 'sendTo',
             'listen', 'accept', 'setKeepAlive', 'setNoDelay', 'getInfo', 'getNetworkList'],
+        sockets: [
+            { n: 'tcp', props: [
+                'create','update','setPaused','setKeepAlive','setNoDelay','connect',
+                'disconnect','secure','send','close','getInfo','getSockets'] },
+            { n: 'tcpServer', props: [
+                'create','update','setPaused','listen','disconnect','close','getInfo','getSockets'] }, 
+            { n: 'udp', props: [
+                'create','update','setPaused','bind','send','close','getInfo',
+                'getSockets','joinGroup','leaveGroup','setMulticastTimeToLive',
+                'setMulticastLoopbackMode','getJoinedGroups','setBroadcast'] }],
         system: [
             { n: 'cpu', props: ['getInfo'] },
             { n: 'memory', props: ['getInfo'] },
