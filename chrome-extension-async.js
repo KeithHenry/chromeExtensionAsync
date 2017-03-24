@@ -47,7 +47,7 @@
                                 const cbObj = parseCB(...cbArgs);
                                 resolve(cbObj);
                             }
-                            else if (!cbArgs)
+                            else if (!cbArgs || cbArgs.length === 0)
                                 resolve();
                             else if (cbArgs.length === 1)
                                 resolve(cbArgs[0]);
