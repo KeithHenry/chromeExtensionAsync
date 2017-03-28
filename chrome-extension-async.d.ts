@@ -5244,7 +5244,7 @@ declare namespace chrome.runtime {
      * Returns a DirectoryEntry for the package directory.
      * @since Chrome 29.
      */
-    export function getPackageDirectoryEntry(callback?: (directoryEntry: DirectoryEntry) => void): Promise<DirectoryEntry>;
+    export function getPackageDirectoryEntry(callback?: (directoryEntry: any) => void): Promise<any>;
     /**
      * Returns information about the current platform.
      * @since Chrome 29.
@@ -5605,6 +5605,10 @@ declare namespace chrome.storage {
 ////////////////////
 // Socket
 ////////////////////
+/** Use the chrome.socket API to send and receive data over the network using TCP and UDP connections. 
+ * Note: Starting with Chrome 33, this API is deprecated in favor of the sockets.udp, sockets.tcp and sockets.tcpServer APIs.
+ * @since Chrome 24.
+ * @deprecated Chrome 33. */
 declare namespace chrome.socket {
     interface CreateInfo {
         socketId: number;

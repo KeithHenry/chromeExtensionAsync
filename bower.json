@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-async",
-  "description": "Promise wrapper for the Chrome extension API so that it can be used with async/await rather than callbacks",
+  "description": "Promise wrapper for the Chrome extension API so that it can be used with async and await rather than callbacks",
   "main": "chrome-extension-async.js",
   "authors": [
     "Keith Henry <keith.henry@evolutionjobs.co.uk>"
