@@ -74,6 +74,8 @@ async function checkUpdate() {
 }
 ```
 
+This also includes a check against [`chrome.runtime.lastError`](https://developer.chrome.com/extensions/runtime#property-lastError), so that you can use `try`-`catch` to get exceptions thrown from the Chrome API.
+
 ## Installation
 Use bower
 ```
@@ -151,8 +153,8 @@ Supported API:
 
 Pull requests with additional API gratefully received.
 
-### 3.0.0
-3.0.0 is a breaking change from v1 and v2: now the original API is wrapped by an identical method that can be called with either old or new syntax.
+### v3 Changes
+v3 introduces a breaking change from v1 and v2: now the original Chrome API is wrapped by an identical method that can be called with either old or new syntax.
 Callbacks can still be used on the same methods, and will fire before the promise resolves.
 Any error thrown inside the callback function will cause the promise to reject.
 
