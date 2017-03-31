@@ -14,10 +14,14 @@ Once activated against the Chrome API each callback function gets a `Promise` ve
 Chrome supports ES2017 syntax, so in extensions we can take full advantage of it.
 
 ## Examples
-For instance, to get the current active tab:
+Using the basic Chrome API, let's:
+- Get the current active tab 
+- Execute a script in that tab
+- Do something with the first result of the script
 
 ```javascript
-function startDoSomething(callback) {
+function startDoSomething(script, callback) {
+    // Fire off the tabs query and continue in the callback
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         
         // Check API for any errors thrown
@@ -25,37 +29,48 @@ function startDoSomething(callback) {
             // Handle errors from chrome.tabs.query
         }
         else {
-            try {
-                var activeTab = tabs[0];
+            var activeTab = tabs[0];
 
-                // Do stuff with activeTab...
-
-                callback(activeTab);
-            }
-            catch(err) {
-                // Handle errors from my code
-            }
+            // Fire off the injected script and continue in the callback
+            chrome.tabs.executeScript(activeTab.id, { code: script }, function(results) {
+                
+                // Check API for any errors thrown, again
+                if (chrome.runtime.lastError) {
+                    // Handle errors from chrome.tabs.executeScript
+                }
+                else {
+                    var firstScriptResult = results[0];
+                    callback(firstScriptResult);
+                }
+            });
         }
     });
 }
 ```
 
-Instead use `await`:
+This works, but the nested callbacks are painful to debug and maintain, and they can quickly lead to 'callback hell'.
+
+Instead, with this library, we can use `await`:
 
 ```javascript
-async function doSomething() {
+async function doSomething(script) {
     try {
+        // Query the tabs and continue once we have the result
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         const activeTab = tabs[0];
 
-        // Do stuff with activeTab...
-
-        return activeTab;
+        // Execute the injected script and continue once we have the result
+        const results = await chrome.tabs.executeScript(activeTab.id, { code: script });
+        const firstScriptResult = results[0];
+        return firstScriptResult;
     }
     catch(err) {
-        // Handle errors from chrome.tabs.query or my code
+        // Handle errors from chrome.tabs.query, chrome.tabs.executeScript or my code
     }
 }
+
+// If you want to use the same callback you can use Promise syntax too:
+doSomething(script).then(callback);
 ```
 
 Some callbacks take multiple parameters - in these cases the `Promise` will be a combined object:
@@ -172,4 +187,4 @@ async function startDoSomethingHybrid(callback) {
 }
 ```
 
-Older versions added a `...Async` suffix to either the function (2.0.0) or the API class (1.0.0).
+Older versions added a `...Async` suffix to either the function (2.0.0) or the API class (1.0.0). These are still available on bower (but not npm) but are not maintained.
