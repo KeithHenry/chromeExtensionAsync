@@ -29,7 +29,7 @@ Or [download](chrome-extension-async.js) `chrome-extension-async.js` file and in
 <script type="text/javascript" src="chrome-extension-async.js"></script>
 ```
 
-TypeScript definitions for the altered API are in `chrome-extension-async.d.ts`
+TypeScript definitions for the altered API are in [`chrome-extension-async.d.ts`](chrome-extension-async.d.ts)
 
 ## Examples
 Using the basic Chrome API, let's:
