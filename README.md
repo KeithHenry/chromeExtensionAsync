@@ -13,6 +13,24 @@ Once activated against the Chrome API each callback function gets a `Promise` ve
 
 Chrome supports ES2017 syntax, so in extensions we can take full advantage of it.
 
+## Installation
+Use bower
+```
+bower install chrome-extension-async
+```
+
+Or [npm](https://www.npmjs.com/package/chrome-extension-async)
+```
+npm i chrome-extension-async
+```
+
+Or [download](chrome-extension-async.js) `chrome-extension-async.js` file and include it directly:
+```html
+<script type="text/javascript" src="chrome-extension-async.js"></script>
+```
+
+TypeScript definitions for the altered API are in `chrome-extension-async.d.ts`
+
 ## Examples
 Using the basic Chrome API, let's:
 - Get the current active tab 
@@ -91,25 +109,39 @@ async function checkUpdate() {
 
 This also includes a check against [`chrome.runtime.lastError`](https://developer.chrome.com/extensions/runtime#property-lastError), so that you can use `try`-`catch` to get exceptions thrown from the Chrome API.
 
-## Installation
-Use bower
-```
-bower install chrome-extension-async
+### Execute Injected Scripts Asynchronously With `chrome.tabs.executeAsyncFunction`
+New in v3.2 is `chrome.tabs.executeAsyncFunction`, an enhancement to the tabs API that allows a popup or browser/page action to easily execute asynchronous code in a page. This:
+
+- Adds `chrome.runtime.sendMessage` to the injected script to return the result.
+- Uses `chrome.runtime.onMessage.addListener` to listen for the injected event.
+- Fires the script with `chrome.tabs.executeScript`.
+- Wraps the whole thing in a promise that resolves with the final result.
+- Adds all the relevant error handling by rejecting the promise.
+
+```javascript
+const scriptToExecute = async function() {
+    // await promises in the tab
+}
+
+try{
+    // The function will be .toString and applied to the {code:} property
+    const results = await chrome.tabs.executeAsyncFunction(activeTab.id, scriptToExecute);
+
+    // results now holds the result of the asynchronous code run in the page
+}
+catch(err) {
+    // Any error either setting up or executing the script
+    // Note that errors from the page will be re-thrown copies
+}
 ```
 
-Or [npm](https://www.npmjs.com/package/chrome-extension-async)
-```
-npm i chrome-extension-async
-```
+This is held in its own file: [`execute-async-function.js`](execute-async-function.js):
 
-Or download `chrome-extension-async.js` file and include it directly:
 ```html
-<script type="text/javascript" src="chrome-extension-async.js"></script>
+<script type="text/javascript" src="execute-async-function.js"></script>
 ```
 
-TypeScript definitions for the altered API are in `chrome-extension-async.d.ts`
-
-## Release Notes
+## Supported APIs
 This only 'promisifies' API functions that use callbacks and are not marked as deprecated. 
 No backwards compatibility is attempted.
 
@@ -167,6 +199,11 @@ Supported API:
 - [chrome.windows](https://developer.chrome.com/extensions/windows)
 
 Pull requests with additional API gratefully received.
+
+## Release Notes
+
+### v3.2
+v3.2 adds `chrome.tabs.executeAsyncFunction`; this is backwards compatible and opt-in functionality.
 
 ### v3 Changes
 v3 introduces a breaking change from v1 and v2: now the original Chrome API is wrapped by an identical method that can be called with either old or new syntax.
