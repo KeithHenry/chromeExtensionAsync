@@ -116,4 +116,4 @@ Stack: ${message.error.stack}`)
 
         return message.content;
     }
-});
+})();
