@@ -127,13 +127,17 @@ try{
     // The function will be .toString and applied to the {code:} property
     const results = await chrome.tabs.executeAsyncFunction(activeTab.id, scriptToExecute);
 
-    // results now holds the result of the asynchronous code run in the page
+    // results now holds the output of the asynchronous code run in the page
 }
 catch(err) {
     // Any error either setting up or executing the script
     // Note that errors from the page will be re-thrown copies
 }
 ```
+
+`chrome.tabs.executeAsyncFunction` can take a `function`, `string`, or [`executeScript` details](https://developer.chrome.com/extensions/tabs#method-executeScript) with the `code` property set. The script must be `async` or return a `Promise`. Details with a `file` property are not supported. Scripts that output multiple values are not supported.
+
+Unlike `chrome.tabs.executeScript` this can take a `function`, but note that it just converts the function to a string to pass it. This means that it must be self contained (it cannot call other user defined functions) and it cannot be native (as many serialise to `function foobar() { [native code] }`).
 
 This is held in its own file: [`execute-async-function.js`](execute-async-function.js):
 
