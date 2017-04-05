@@ -1,3 +1,6 @@
+/** Inject and execute a single async function or promise in a tab, resolving with the result.
+ * @author Keith Henry <keith.henry@evolutionjobs.co.uk>
+ * @license MIT */
 (function () {
     'use strict';
 
