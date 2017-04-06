@@ -124,8 +124,11 @@ const scriptToExecute = async function() {
 }
 
 try{
-    // The function will be .toString and applied to the {code:} property
-    const results = await chrome.tabs.executeAsyncFunction(activeTab.id, scriptToExecute);
+    // The await returns the complete result of the function
+    const results = await chrome.tabs.executeAsyncFunction(
+        activeTab.id,       // If null this will be the current tab
+        scriptToExecute,    // Will be .toString and applied to the {code:} property
+        123, 'foo');        // Additional parameters will be passed to scriptToExecute
 
     // results now holds the output of the asynchronous code run in the page
 }
@@ -228,4 +231,4 @@ async function startDoSomethingHybrid(callback) {
 }
 ```
 
-Older versions added a `...Async` suffix to either the function (2.0.0) or the API class (1.0.0). These are still available on bower (but not npm) but are not maintained.
+Older versions added a `...Async` suffix to either the function (2.0.0) or the API class (1.0.0). These are still available on bower (but not npm) and are not maintained.

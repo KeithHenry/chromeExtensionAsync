@@ -7,15 +7,16 @@
     /** Wrap the async function in an await and a runtime.sendMessage with the result
      * @param {function|string|object} action The async function to inject into the page.
      * @param {string} id Single use random ID.
+     * @param {any[]} params Array of additional parameters to pass.
      * @returns {object} Execution details to pass to chrome.tabs.executeScript */
-    function setupDetails(action, id) {
+    function setupDetails(action, id, params) {
         // Wrap the async function in an await and a runtime.sendMessage with the result
         // This should always call runtime.sendMessage, even if an error is thrown
         const wrapAsyncSendMessage = action =>
             `(async function () {
     const result = { asyncFuncID: '${id}' };
     try {
-        result.content = await (${action})();
+        result.content = await (${action})(${params.map(p => JSON.stringify(p)).join(',')});
     }
     catch(x) {
         // Make an explicit copy of the Error properties
@@ -81,14 +82,16 @@
      * This must be marked as async or return a Promise.
      * This can be the details object expected by [executeScript]{@link https://developer.chrome.com/extensions/tabs#method-executeScript}, 
      * in which case the code property MUST be populated with a promise-returning function.
+     * @param {any[]} params Parameters to serialise and pass to the action (using JSON.stringify)
      * @returns {Promise} Resolves when the injected async script has finished executing and holds the result of the script.
      * Rejects if an error is encountered setting up the function, if an error is thrown by the executing script, or if it times out. */
-    chrome.tabs.executeAsyncFunction = async function (tab, action) {
+    chrome.tabs.executeAsyncFunction = async function (tab, action, ...params) {
 
         // Generate a random 4-char key to avoid clashes if called multiple times
         const id = Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 
-        const details = setupDetails(action, id);
+        // Write the script and serialise the params
+        const details = setupDetails(action, id, params);
 
         // Add a listener so that we know when the async script finishes
         const message = promisifyRuntimeMessage(id);
