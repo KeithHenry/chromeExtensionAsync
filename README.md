@@ -148,6 +148,8 @@ This is held in its own file: [`execute-async-function.js`](execute-async-functi
 <script type="text/javascript" src="execute-async-function.js"></script>
 ```
 
+This relies on a `chrome.runtime.onMessage.addListener` subscription, so it will fail if called from within a listener event.
+
 ## Supported APIs
 This only 'promisifies' API functions that use callbacks and are not marked as deprecated. 
 No backwards compatibility is attempted.
