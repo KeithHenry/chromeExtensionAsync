@@ -109,6 +109,11 @@ async function checkUpdate() {
 
 This also includes a check against [`chrome.runtime.lastError`](https://developer.chrome.com/extensions/runtime#property-lastError), so that you can use `try`-`catch` to get exceptions thrown from the Chrome API.
 
+### Event Listener API
+These are not included. 
+For instance `chrome.browserAction.onClicked.addListener` takes a callback function, but executes it every time the event fires.
+It is not suitable for a `Promise` or `async` call
+
 ### Execute Injected Scripts Asynchronously With `chrome.tabs.executeAsyncFunction`
 New in v3.2 is `chrome.tabs.executeAsyncFunction`, an enhancement to the tabs API that allows a popup or browser/page action to easily execute asynchronous code in a page. This:
 
