@@ -227,7 +227,7 @@
             { n: 'storage', props: ['getInfo', 'ejectDevice', 'getAvailableCapacity'] }],
         tabCapture: ['capture', 'getCapturedTabs'],
         tabs: [
-            'get', 'getCurrent', 'sendMessage', 'create', 'duplicate',
+            'get', 'getAllInWindow', 'getCurrent', 'sendMessage', 'create', 'duplicate',
             'query', 'highlight', 'update', 'move', 'reload', 'remove',
             'detectLanguage', 'captureVisibleTab', 'executeScript',
             'insertCSS', 'setZoom', 'getZoom', 'setZoomSettings',
