@@ -227,7 +227,7 @@
             { n: 'storage', props: ['getInfo', 'ejectDevice', 'getAvailableCapacity'] }],
         tabCapture: ['capture', 'getCapturedTabs'],
         tabs: [
-            'get', 'getAllInWindow', 'getCurrent', 'sendMessage', 'create', 'duplicate',
+            'get', 'getCurrent', 'sendMessage', 'create', 'duplicate',
             'query', 'highlight', 'update', 'move', 'reload', 'remove',
             'detectLanguage', 'captureVisibleTab', 'executeScript',
             'insertCSS', 'setZoom', 'getZoom', 'setZoomSettings',
@@ -240,4 +240,10 @@
         webNavigation: ['getFrame', 'getAllFrames', 'handlerBehaviorChanged'],
         windows: ['get', 'getCurrent', 'getLastFocused', 'getAll', 'create', 'update', 'remove']
     });
+    
+    /** Gets details about all tabs in the specified window.
+     * @param {number} windowId Defaults to the current window.
+     * @returns {Promise} Resolves to an array of tabs in the specified window */
+    chrome.tabs.getAllInWindow = windowId =>
+        chrome.tabs.query({windowId: windowId});
 })();
