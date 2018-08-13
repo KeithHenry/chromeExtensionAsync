@@ -3,6 +3,9 @@
   "version": "3.2.5",
   "description": "Promise wrapper for the Chrome extension API so that it can be used with async and await rather than callbacks",
   "main": "chrome-extension-async.js",
+  "scripts": {
+    "build": "npx babel chrome-extension-async.js --out-file compiled.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KeithHenry/chromeExtensionAsync.git"
@@ -19,5 +22,10 @@
     "extension",
     "promise",
     "async-await"
-  ]
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "npx": "^10.2.0"
+  }
 }
