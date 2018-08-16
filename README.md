@@ -215,10 +215,12 @@ Supported API:
 Pull requests with additional API gratefully received.
 
 ## ES5 Build
-Note that you can use an `ES5` build version of "Chrome Extension Async".  
+Note that you can use an `ES5` build version of "Chrome Extension Async". 
+```
+execute-async-function.es5.js
+```
 Sometimes your application has a build process that requires you to use 3rd party libraries that published with `ES5` code.  
 For example, [create-react-app](https://github.com/facebook/create-react-app) will [break the build and minification process](https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/template/README.md#npm-run-build-fails-to-minify) if one of your dependencies is not published as standard `ES5` code.  
-
 
 ## Release Notes
 
