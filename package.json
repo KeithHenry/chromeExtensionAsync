@@ -4,7 +4,7 @@
   "description": "Promise wrapper for the Chrome extension API so that it can be used with async and await rather than callbacks",
   "main": "chrome-extension-async.js",
   "scripts": {
-    "build": "npx babel chrome-extension-async.js --out-file compiled.js"
+    "build": "npx babel chrome-extension-async.js --out-file execute-async-function.es5.js"
   },
   "repository": {
     "type": "git",
