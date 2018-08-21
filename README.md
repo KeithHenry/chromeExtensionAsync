@@ -31,6 +31,8 @@ Or [download](chrome-extension-async.js) `chrome-extension-async.js` file and in
 
 TypeScript definitions for the altered API are in [`chrome-extension-async.d.ts`](chrome-extension-async.d.ts)
 
+You must reference [`chrome-extension-async.js`](chrome-extension-async.js) before your code attempts to use the features of this, as it needs to run across the Chrome API before you call it. `<script async>` is not currently supported, but you can use `<script defer>` so long as the scripts that use this are also `defer` and after it. 
+
 ## Examples
 Using the basic Chrome API, let's:
 - Get the current active tab 
@@ -223,6 +225,9 @@ Sometimes your application has a build process that requires you to use 3rd part
 For example, [create-react-app](https://github.com/facebook/create-react-app) will [break the build and minification process](https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/template/README.md#npm-run-build-fails-to-minify) if one of your dependencies is not published as standard `ES5` code.  
 
 ## Release Notes
+
+### v3.3
+v3.3 adds `execute-async-function.es5.js` transpiled ES5 version for toolchains that depend on the older JS syntax.
 
 ### v3.2
 v3.2 adds `chrome.tabs.executeAsyncFunction`; this is backwards compatible and opt-in functionality.
