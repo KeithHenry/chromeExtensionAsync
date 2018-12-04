@@ -86,7 +86,7 @@
             const m = api[funcName];
             if (typeof m === 'function')
                 // This is a function, wrap in a promise
-                api[funcName] = promisify(m, funcDef.cb);
+                api[funcName] = promisify(m.bind(api), funcDef.cb);
             else
                 // Sub-API, recurse this func with the mapped props
                 applyMap(m, funcDef.props);
