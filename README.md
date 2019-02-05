@@ -252,3 +252,6 @@ async function startDoSomethingHybrid(callback) {
 ```
 
 Older versions added a `...Async` suffix to either the function (2.0.0) or the API class (1.0.0). These are still available on bower (but not npm) and are not maintained.
+
+#### v3.3.1
+This addresses a breaking change in `chrome.storage` and fixes _TypeError: Illegal invocation: Function must be called on an object of type StorageArea_ exceptions.
