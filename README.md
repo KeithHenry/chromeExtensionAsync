@@ -229,6 +229,12 @@ For example, [create-react-app](https://github.com/facebook/create-react-app) wi
 ### v3.3
 v3.3 adds `execute-async-function.es5.js` transpiled ES5 version for toolchains that depend on the older JS syntax.
 
+#### v3.3.1
+This addresses a breaking change in `chrome.storage` and fixes _TypeError: Illegal invocation: Function must be called on an object of type StorageArea_ exceptions.
+
+#### v3.3.2
+Fixed bug calling `chrome.identity.getRedirectURL`
+
 ### v3.2
 v3.2 adds `chrome.tabs.executeAsyncFunction`; this is backwards compatible and opt-in functionality.
 
@@ -253,5 +259,4 @@ async function startDoSomethingHybrid(callback) {
 
 Older versions added a `...Async` suffix to either the function (2.0.0) or the API class (1.0.0). These are still available on bower (but not npm) and are not maintained.
 
-#### v3.3.1
-This addresses a breaking change in `chrome.storage` and fixes _TypeError: Illegal invocation: Function must be called on an object of type StorageArea_ exceptions.
+
