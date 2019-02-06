@@ -177,8 +177,7 @@
         history: ['search', 'getVisits', 'addUrl', 'deleteUrl', 'deleteRange', 'deleteAll'],
         i18n: ['getAcceptLanguages', 'detectLanguage'],
         identity: [
-            'getAuthToken', 'getProfileUserInfo', 'removeCachedAuthToken',
-            'launchWebAuthFlow', 'getRedirectURL'],
+            'getAuthToken', 'getProfileUserInfo', 'removeCachedAuthToken', 'launchWebAuthFlow'],
         idle: ['queryState'],
         input: [{
             n: 'ime', props: [
