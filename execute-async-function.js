@@ -52,27 +52,46 @@
         return execArgs;
     }
 
-    /** Create a promise that resolves when chrome.runtime.onMessage fires with the id
+    /** Create a promise that resolves when a chrome event (such as chrome.runtime.onMessage) fires
+     * @param {Event} chromeEvent The event type.
      * @param {string} id ID for the message we're expecting.
      * Messages without the ID will not resolve this promise.
      * @returns {Promise} Promise that resolves when chrome.runtime.onMessage.addListener fires. */
-    function promisifyRuntimeMessage(id) {
-        // We don't have a reject because the finally in the script wrapper should ensure this always gets called.
+    function promisifyChromeEvent(chromeEvent, id) {
+        // // We don't have a reject because the finally in the script wrapper should ensure this always gets called.
+        // We don't have a reject because this should be designed to always get called.
         return new Promise(resolve => {
-            const listener = request => {
-                // Check that the message sent is intended for this listener
-                if (request && request.asyncFuncID === id) {
-
-                    // Remove this listener
-                    chrome.runtime.onMessage.removeListener(listener);
-                    resolve(request);
+            const listener = function(...params) {
+                
+                if (chromeEvent === chrome.tabs.onUpdated) {
+                    const tabId = params[0];
+                    const changeInfo = params[1];
+                    const tab = params[2];
+                    // onUpdated event is called multiple times during a single load.
+                    // the status of 'complete' is called only once, when it is finished.
+                    if (tabId === id && changeInfo.status === 'complete') { 
+                        // Remove this listener
+                        chromeEvent.removeListener(listener);
+                        resolve({
+                            tabId: tabId,
+                            changeInfo: changeInfo,
+                            tab: tab
+                        });
+                    }
+                } else { // if (chromeEvent === 'chrome.runtime.onMessage')
+                    // Check that the message sent is intended for this listener
+                    if (!!params && !!params[0] && params[0].asyncFuncID === id) {
+                        // Remove this listener
+                        chromeEvent.removeListener(listener);
+                        resolve(params[0]);
+                    }
                 }
 
                 // Return false as we don't want to keep this channel open https://developer.chrome.com/extensions/runtime#event-onMessage
                 return false;
             };
 
-            chrome.runtime.onMessage.addListener(listener);
+            chromeEvent.addListener(listener);
         });
     }
 
@@ -94,7 +113,7 @@
         const details = setupDetails(action, id, params);
 
         // Add a listener so that we know when the async script finishes
-        const message = promisifyRuntimeMessage(id);
+        const message = promisifyChromeEvent(chrome.runtime.onMessage, id);
 
         // This will return a serialised promise, which will be broken (http://stackoverflow.com/questions/43144485)
         await chrome.tabs.executeScript(tab, details);
@@ -108,4 +127,21 @@ Stack: ${error.stack}`)
 
         return content;
     }
+
+    chrome.tabs.createAndWait = async function(createProperties) {
+        // TODO: implement error handling - and maybe surround all awaits in try-catch block?
+        //       or it might be OK, even preferred, to let the errors bubble up.
+        const tab = await chrome.tabs.create(createProperties);
+        const tabLoadCompletePromise = promisifyChromeEvent(chrome.tabs.onUpdated, tab.id);
+        const results = await tabLoadCompletePromise;
+        return results;
+    }
+
+    chrome.tabs.reloadAndWait = async function(tabId, reloadProperties) {
+        await chrome.tabs.reload(tabId, reloadProperties);
+        const tabLoadCompletePromise = promisifyChromeEvent(chrome.tabs.onUpdated, tabId);
+        const results = await tabLoadCompletePromise;
+        return results;
+    }
+
 })();
