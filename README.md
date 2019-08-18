@@ -4,7 +4,7 @@
 
 Promise wrapper for the Chrome extension API so that it can be used with async/await rather than callbacks
 
-The [Extension API](https://developer.chrome.com/extensions) provided by Chrome uses callbacks. 
+The [Extension API](https://developer.chrome.com/extensions) provided by Chrome uses callbacks.
 However, Chrome now supports `async` and `await` keywords.
 
 This library wraps Chrome extension API callback methods in promises, so that they can be called with `async` and `await`.
@@ -31,11 +31,11 @@ Or [download](chrome-extension-async.js) `chrome-extension-async.js` file and in
 
 TypeScript definitions for the altered API are in [`chrome-extension-async.d.ts`](chrome-extension-async.d.ts)
 
-You must reference [`chrome-extension-async.js`](chrome-extension-async.js) before your code attempts to use the features of this, as it needs to run across the Chrome API before you call it. `<script async>` is not currently supported, but you can use `<script defer>` so long as the scripts that use this are also `defer` and after it. 
+You must reference [`chrome-extension-async.js`](chrome-extension-async.js) before your code attempts to use the features of this, as it needs to run across the Chrome API before you call it. `<script async>` is not currently supported, but you can use `<script defer>` so long as the scripts that use this are also `defer` and after it.
 
 ## Examples
 Using the basic Chrome API, let's:
-- Get the current active tab 
+- Get the current active tab
 - Execute a script in that tab
 - Do something with the first result of the script
 
@@ -43,7 +43,7 @@ Using the basic Chrome API, let's:
 function startDoSomething(script, callback) {
     // Fire off the tabs query and continue in the callback
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        
+
         // Check API for any errors thrown
         if (chrome.runtime.lastError) {
             // Handle errors from chrome.tabs.query
@@ -53,7 +53,7 @@ function startDoSomething(script, callback) {
 
             // Fire off the injected script and continue in the callback
             chrome.tabs.executeScript(activeTab.id, { code: script }, function(results) {
-                
+
                 // Check API for any errors thrown, again
                 if (chrome.runtime.lastError) {
                     // Handle errors from chrome.tabs.executeScript
@@ -112,7 +112,7 @@ async function checkUpdate() {
 This also includes a check against [`chrome.runtime.lastError`](https://developer.chrome.com/extensions/runtime#property-lastError), so that you can use `try`-`catch` to get exceptions thrown from the Chrome API.
 
 ### Event Listener API
-These are not included. 
+These are not included.
 For instance `chrome.browserAction.onClicked.addListener` takes a callback function, but executes it every time the event fires.
 It is not suitable for a `Promise` or `async` call.
 
@@ -125,12 +125,12 @@ New in v3.2 is `chrome.tabs.executeAsyncFunction`, an enhancement to the tabs AP
 - Wraps the whole thing in a promise that resolves with the final result.
 - Adds all the relevant error handling by rejecting the promise.
 
-```javascript
+``` javascript
 const scriptToExecute = async function() {
     // await promises in the tab
 }
 
-try{
+try {
     // The await returns the complete result of the function
     const results = await chrome.tabs.executeAsyncFunction(
         activeTab.id,       // If null this will be the current tab
@@ -157,8 +157,50 @@ This is held in its own file: [`execute-async-function.js`](execute-async-functi
 
 This relies on a `chrome.runtime.onMessage.addListener` subscription, so it will fail if called from within a listener event.
 
+### Create and Reload Tabs with `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait`
+
+The normal `chrome.tabs.create` and `chrome.tabs.reload` functions executes their callbacks before the tab is finished loading. This makes it difficult to create or reload a tab, and then execute a content script on the page.  `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait` are an enhancement to the tabs API that waits until the tab has finished loading the url, and is ready to execute scripts.  They pair great with `chrome.tabs.executeAsyncFunction`. They:
+
+- Call `chrome.tabs.create` or `chrome.tabs.reload`, await the results, and grab the tab's id.
+- Use `chrome.tabs.onUpdated.addListener` to listen for the 'completed' status for the tab's id.
+- Wrap the whole thing in a promise that resolves with the final result.
+- Use `chrome.tabs.onRemoved.addListener` and `chrome.tabs.onReplaced.addListener` to detect if the tab is removed or replaced before the loading finishes, and rejects the promise with an Error.
+- Use an auto-timeout of 2 minutes.  If the page doesn't load in 120 seconds, or one of the three listeners is never called, the promise will be rejected with an Error.
+
+`chrome.tabs.createAndWait` takes in the same parameters as [chrome.tabs.create](https://developer.chrome.com/extensions/tabs#method-create) except for the callback, and returns an object containing the same properties as the parameters passed to the callback for the [chrome.tabs.onUpdated](https://developer.chrome.com/extensions/tabs#event-onUpdated) event.
+
+```javascript
+try {
+    // Create a new tab and wait for it to finish loading.  The url will take 5 seconds to finish loading.
+    // Try closing the tab before it finishes loading, and you will see the error.
+    const {tabId, changeInfo, tab} = await chrome.tabs.createAndWait({ url: "http://www.mocky.io/v2/5d59a32e3000006c2ed84c7a?mocky-delay=5000ms", active:true });
+    // Now that it is finished loading, it is ready to execute content scripts.
+    const scriptResults = await chrome.tabs.executeAsyncFunction(tab.id, () => { alert('The tab finished loading.');} );
+    // Voila!  In two lines you've created a new tab, and executed a content script on it!
+}
+catch (err) {
+    alert(err);
+}
+```
+`chrome.tabs.reloadAndWait` takes in the same parameters as [chrome.tabs.reload](https://developer.chrome.com/extensions/tabs#method-reload) except for the callback, and returns an object containing the same properties as the parameters passed to the callback for the [chrome.tabs.onUpdated](https://developer.chrome.com/extensions/tabs#event-onUpdated) event.
+```javascript
+try {
+  // Get the current tab.
+  const tabs = await chrome.tabs.query({active: true, currentWindow: true});
+  const currentTab = tabs[0];
+  // The second parameter, reloadProperties is optional, and here it is omitted.
+  const {tabId, changeInfo, tab} = await chrome.tabs.reloadAndWait(currentTab.id);
+  const scriptResults = await chrome.tabs.executeAsyncFunction(tab.id, () => { alert('The tab finished reloading.');} );
+}
+catch (err) {
+  alert(err);
+}
+```
+
+These functions are held in: [`execute-async-function.js`](execute-async-function.js)
+
 ## Supported APIs
-This only 'promisifies' API functions that use callbacks and are not marked as deprecated. 
+This only 'promisifies' API functions that use callbacks and are not marked as deprecated.
 No backwards compatibility is attempted.
 
 Each API is added manually as JS can't spot deprecated or functions with no callbacks itself.
@@ -217,7 +259,7 @@ Supported API:
 Pull requests with additional API gratefully received.
 
 ## ES5 Build
-Note that you can use an `ES5` build version of "Chrome Extension Async". 
+Note that you can use an `ES5` build version of "Chrome Extension Async".
 ```
 execute-async-function.es5.js
 ```
@@ -258,5 +300,3 @@ async function startDoSomethingHybrid(callback) {
 ```
 
 Older versions added a `...Async` suffix to either the function (2.0.0) or the API class (1.0.0). These are still available on bower (but not npm) and are not maintained.
-
-
