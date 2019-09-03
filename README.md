@@ -159,13 +159,13 @@ This relies on a `chrome.runtime.onMessage.addListener` subscription, so it will
 
 ### Create and Reload Tabs with `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait`
 
-The normal `chrome.tabs.create` and `chrome.tabs.reload` functions executes their callbacks before the tab is finished loading. This makes it difficult to create or reload a tab, and then execute a content script on the page.  `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait` are an enhancement to the tabs API that waits until the tab has finished loading the url, and is ready to execute scripts.  They pair great with `chrome.tabs.executeAsyncFunction`. They:
+The normal `chrome.tabs.create` and `chrome.tabs.reload` functions execute their callbacks before the tab is finished loading. This makes it difficult to create or reload a tab, and then execute a content script on the page.  `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait` are an enhancement to the tabs API that waits until the tab has finished loading the url, and is ready to execute scripts.  They pair great with `chrome.tabs.executeAsyncFunction`. They:
 
 - Call `chrome.tabs.create` or `chrome.tabs.reload`, await the results, and grab the tab's id.
 - Use `chrome.tabs.onUpdated.addListener` to listen for the 'completed' status for the tab's id.
 - Wrap the whole thing in a promise that resolves with the final result.
 - Use `chrome.tabs.onRemoved.addListener` and `chrome.tabs.onReplaced.addListener` to detect if the tab is removed or replaced before the loading finishes, and rejects the promise with an Error.
-- Use an auto-timeout of 2 minutes.  If the page doesn't load in 120 seconds, or one of the three listeners is never called, the promise will be rejected with an Error.
+- Use an auto-timeout feature. If the page doesn't load in the specified milliseconds, or one of the three listeners is never called, the promise will be rejected with an Error. The value of the timeout is configurable with an optional parameter. The default value is 12e4 milliseconds (2 minutes). 
 
 `chrome.tabs.createAndWait` takes in the same parameters as [chrome.tabs.create](https://developer.chrome.com/extensions/tabs#method-create) except for the callback, and returns an object containing the same properties as the parameters passed to the callback for the [chrome.tabs.onUpdated](https://developer.chrome.com/extensions/tabs#event-onUpdated) event.
 

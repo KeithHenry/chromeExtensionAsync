@@ -79,8 +79,10 @@
     /** Create a promise that resolves when chrome.tabs.onUpdated fires with the id
      * @param {string} id ID for the tab we're expecting.
      * Tabs without the ID will not resolve or reject this promise.
+     * @param {number} msTimeout Optional milliseconds to timeout when tab is loading
+     * If this value is null or zero, it defaults to 120,000 ms (2 minutes).
      * @returns {Promise} Promise that resolves when chrome.tabs.onUpdated.addListener fires. */
-    function promisifyTabUpdate(id) {
+    function promisifyTabUpdate(id, msTimeout) {
 
         let mainPromise = new Promise((resolve, reject) => {
             const tabUpdatedListener = (tabId, changeInfo, tab) => {
@@ -123,10 +125,13 @@
         // there is nothing in the chrome extension api documentation that guarantees this will be an exhaustive approach.
         // So to account for the unknown, I am adding an auto-timeout feature to reject the promise after 2 minutes.
         let timeoutPromise = new Promise ( (resolve, reject) => {
-            const secondsToTimeout = 120;
+            let millisecondsToTimeout = 12e4; // 12e4 = 2 minutes
+            if (!!msTimeout && typeof msTimeout === 'number' && msTimeout > 0) {
+                millisecondsToTimeout = msTimeout;
+            }
             setTimeout(() => {
                 reject(new Error(`The tab loading timed out after ${secondsToTimeout} seconds.`));
-            }, secondsToTimeout * 1000);
+            }, millisecondsToTimeout);
         });
 
         return Promise.race([mainPromise, timeoutPromise]);
@@ -168,12 +173,14 @@ Stack: ${error.stack}`)
     /** Creates a Promise that resolves only when the created tab is finished loading.
      * The normal chrome.tabs.create function executes its' callback before the tab finishes loading the page.
      * @param {object} createProperties same as the createProperties param for [chrome.tabs.create]{@link https://developer.chrome.com/extensions/tabs#method-create}.
+     * @param {number} msTimeout Optional milliseconds to timeout when tab is loading
+     * If this value is null or zero, it defaults to 120,000 ms (2 minutes).
      * @returns {Promise} Resolves when the created tab has finished loading and holds the result.
      * The result is an object containing the parameters passed to the callback for [chrome.tabs.onUpdated]{@link https://developer.chrome.com/extensions/tabs#event-onUpdated}.
      * Rejects if an error is encountered loading the tab, or if it times out. */
-    chrome.tabs.createAndWait = async function(createProperties) {
+    chrome.tabs.createAndWait = async function(createProperties, msTimeout) {
         const tab = await chrome.tabs.create(createProperties);
-        const tabLoadCompletePromise = promisifyTabUpdate(tab.id);
+        const tabLoadCompletePromise = promisifyTabUpdate(tab.id, msTimeout);
         const results = await tabLoadCompletePromise;
         return results;
     }
@@ -181,13 +188,15 @@ Stack: ${error.stack}`)
     /** Creates a Promise that resolves only when the tab is finished reloading.
      * The normal chrome.tabs.reload function executes its' callback before the tab finishes loading the page.
      * @param {integer} tabId same as the tabId parameter for [chrome.tabs.reload]{@link https://developer.chrome.com/extensions/tabs#method-reload}.
-     * @param {object} reloadProperties Optional. same as the reloadProperties parameter for [chrome.tabs.reload]{@link https://developer.chrome.com/extensions/tabs#method-reload}.
+     * @param {object} reloadProperties Optional, same as the reloadProperties parameter for [chrome.tabs.reload]{@link https://developer.chrome.com/extensions/tabs#method-reload}.
+     * @param {number} msTimeout Optional milliseconds to timeout when tab is loading
+     * If this value is null or zero, it defaults to 120,000 ms (2 minutes).
      * @returns {Promise} Resolves when the tab has finished reloading and holds the result.
      * The result is an object containing the parameters passed to the callback for [chrome.tabs.onUpdated]{@link https://developer.chrome.com/extensions/tabs#event-onUpdated}.
      * Rejects if an error is encountered loading the tab, or if it times out. */
-    chrome.tabs.reloadAndWait = async function(tabId, reloadProperties) {
+    chrome.tabs.reloadAndWait = async function(tabId, reloadProperties, msTimeout) {
         await chrome.tabs.reload(tabId, reloadProperties);
-        const tabLoadCompletePromise = promisifyTabUpdate(tabId);
+        const tabLoadCompletePromise = promisifyTabUpdate(tabId, msTimeout);
         const results = await tabLoadCompletePromise;
         return results;
     }
