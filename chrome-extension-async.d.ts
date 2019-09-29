@@ -4968,7 +4968,7 @@ declare namespace chrome.runtime {
      * @since Chrome 26.
      */
     interface Port {
-        postMessage: (message: Object) => void;
+        postMessage: (message: any) => void;
         disconnect: () => void;
         /**
          * Optional.
@@ -4994,7 +4994,7 @@ declare namespace chrome.runtime {
 
     interface PortDisconnectEvent extends chrome.events.Event<(port: Port) => void> { }
 
-    interface PortMessageEvent extends chrome.events.Event<(message: Object, port: Port) => void> { }
+    interface PortMessageEvent extends chrome.events.Event<(message: any, port: Port) => void> { }
 
     interface ExtensionMessageEvent extends chrome.events.Event<(message: any, sender: MessageSender, sendResponse: (response: any) => void) => void> { }
 
