@@ -6296,7 +6296,7 @@ declare namespace chrome.tabs {
      */
     export function executeScript(tabId: number, details: InjectDetails, callback?: (result: any[]) => void): Promise<any[]>;
     /** Retrieves details about the specified tab. */
-    export function get(tabId: number, callback: (tab: Tab) => void): Promise<Tab>;
+    export function get(tabId: number, callback?: (tab: Tab) => void): Promise<Tab>;
     /**
      * Gets details about all tabs in the specified window.
      * @deprecated since Chrome 33. Please use tabs.query {windowId: windowId}.
