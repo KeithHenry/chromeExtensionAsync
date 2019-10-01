@@ -76,6 +76,67 @@
         });
     }
 
+    /** Create a promise that resolves when chrome.tabs.onUpdated fires with the id
+     * @param {string} id ID for the tab we're expecting.
+     * Tabs without the ID will not resolve or reject this promise.
+     * @param {number} msTimeout Optional milliseconds to timeout when tab is loading
+     * If this value is null or zero, it defaults to 120,000 ms (2 minutes).
+     * @returns {Promise} Promise that resolves when chrome.tabs.onUpdated.addListener fires. */
+    function promisifyTabUpdate(id, msTimeout) {
+
+        let mainPromise = new Promise((resolve, reject) => {
+            const tabUpdatedListener = (tabId, changeInfo, tab) => {
+                // The onUpdated event is called multiple times during a single load.
+                // the status of 'complete' is called only once, when it is finished.
+                if (tabId === id && changeInfo.status === 'complete') {
+                    removeListeners();
+                    resolve({tabId:tabId, changeInfo:changeInfo, tab:tab});
+                }
+            };
+
+            // This will happen when the tab or window is closed before it finishes loading
+            const tabRemovedListener = (tabId, removeInfo) => {
+                if (tabId === id) {
+                    removeListeners();
+                    reject(new Error(`The tab with id = ${tabId} was removed before it finished loading.`));
+                }
+            }
+
+            // This will happen when the tab is replaced.  This is untested, not sure how to recreate it.
+            const tabReplacedListener = (addedTabId, removedTabId) => {
+                if (removedTabId === id) {
+                    removeListeners();
+                    reject(new Error(`The tab with id = ${removedTabId} was replaced before it finished loading.`));
+                }
+            }
+
+            const removeListeners = () => {
+                chrome.tabs.onUpdated.removeListener(tabUpdatedListener);
+                chrome.tabs.onRemoved.removeListener(tabRemovedListener);
+                chrome.tabs.onReplaced.removeListener(tabReplacedListener);
+            }
+
+            chrome.tabs.onUpdated.addListener(tabUpdatedListener);
+            chrome.tabs.onRemoved.addListener(tabRemovedListener);
+            chrome.tabs.onReplaced.addListener(tabReplacedListener);
+        });
+
+        // Although I have onRemoved and onReplaced events watching to reject the promise,
+        // there is nothing in the chrome extension api documentation that guarantees this will be an exhaustive approach.
+        // So to account for the unknown, I am adding an auto-timeout feature to reject the promise after 2 minutes.
+        let timeoutPromise = new Promise ( (resolve, reject) => {
+            let millisecondsToTimeout = 12e4; // 12e4 = 2 minutes
+            if (!!msTimeout && typeof msTimeout === 'number' && msTimeout > 0) {
+                millisecondsToTimeout = msTimeout;
+            }
+            setTimeout(() => {
+                reject(new Error(`The tab loading timed out after ${secondsToTimeout} seconds.`));
+            }, millisecondsToTimeout);
+        });
+
+        return Promise.race([mainPromise, timeoutPromise]);
+    }
+
     /** Execute an async function and return the result.
      * @param {number} tab Optional ID of the tab in which to run the script; defaults to the active tab of the current window.
      * @param {function|string|object} action The async function to inject into the page.
@@ -108,4 +169,36 @@ Stack: ${error.stack}`)
 
         return content;
     }
+
+    /** Creates a Promise that resolves only when the created tab is finished loading.
+     * The normal chrome.tabs.create function executes its' callback before the tab finishes loading the page.
+     * @param {object} createProperties same as the createProperties param for [chrome.tabs.create]{@link https://developer.chrome.com/extensions/tabs#method-create}.
+     * @param {number} msTimeout Optional milliseconds to timeout when tab is loading
+     * If this value is null or zero, it defaults to 120,000 ms (2 minutes).
+     * @returns {Promise} Resolves when the created tab has finished loading and holds the result.
+     * The result is an object containing the parameters passed to the callback for [chrome.tabs.onUpdated]{@link https://developer.chrome.com/extensions/tabs#event-onUpdated}.
+     * Rejects if an error is encountered loading the tab, or if it times out. */
+    chrome.tabs.createAndWait = async function(createProperties, msTimeout) {
+        const tab = await chrome.tabs.create(createProperties);
+        const tabLoadCompletePromise = promisifyTabUpdate(tab.id, msTimeout);
+        const results = await tabLoadCompletePromise;
+        return results;
+    }
+
+    /** Creates a Promise that resolves only when the tab is finished reloading.
+     * The normal chrome.tabs.reload function executes its' callback before the tab finishes loading the page.
+     * @param {integer} tabId same as the tabId parameter for [chrome.tabs.reload]{@link https://developer.chrome.com/extensions/tabs#method-reload}.
+     * @param {object} reloadProperties Optional, same as the reloadProperties parameter for [chrome.tabs.reload]{@link https://developer.chrome.com/extensions/tabs#method-reload}.
+     * @param {number} msTimeout Optional milliseconds to timeout when tab is loading
+     * If this value is null or zero, it defaults to 120,000 ms (2 minutes).
+     * @returns {Promise} Resolves when the tab has finished reloading and holds the result.
+     * The result is an object containing the parameters passed to the callback for [chrome.tabs.onUpdated]{@link https://developer.chrome.com/extensions/tabs#event-onUpdated}.
+     * Rejects if an error is encountered loading the tab, or if it times out. */
+    chrome.tabs.reloadAndWait = async function(tabId, reloadProperties, msTimeout) {
+        await chrome.tabs.reload(tabId, reloadProperties);
+        const tabLoadCompletePromise = promisifyTabUpdate(tabId, msTimeout);
+        const results = await tabLoadCompletePromise;
+        return results;
+    }
+
 })();
