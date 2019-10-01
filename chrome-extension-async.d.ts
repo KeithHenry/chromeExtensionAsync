@@ -4968,7 +4968,7 @@ declare namespace chrome.runtime {
      * @since Chrome 26.
      */
     interface Port {
-        postMessage: (message: Object) => void;
+        postMessage: (message: any) => void;
         disconnect: () => void;
         /**
          * Optional.
@@ -4994,7 +4994,7 @@ declare namespace chrome.runtime {
 
     interface PortDisconnectEvent extends chrome.events.Event<(port: Port) => void> { }
 
-    interface PortMessageEvent extends chrome.events.Event<(message: Object, port: Port) => void> { }
+    interface PortMessageEvent extends chrome.events.Event<(message: any, port: Port) => void> { }
 
     interface ExtensionMessageEvent extends chrome.events.Event<(message: any, sender: MessageSender, sendResponse: (response: any) => void) => void> { }
 
@@ -6296,7 +6296,7 @@ declare namespace chrome.tabs {
      */
     export function executeScript(tabId: number, details: InjectDetails, callback?: (result: any[]) => void): Promise<any[]>;
     /** Retrieves details about the specified tab. */
-    export function get(tabId: number, callback: (tab: Tab) => void): Promise<Tab>;
+    export function get(tabId: number, callback?: (tab: Tab) => void): Promise<Tab>;
     /**
      * Gets details about all tabs in the specified window.
      * @deprecated since Chrome 33. Please use tabs.query {windowId: windowId}.
