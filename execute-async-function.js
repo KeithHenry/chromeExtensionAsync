@@ -130,7 +130,7 @@
                 millisecondsToTimeout = msTimeout;
             }
             setTimeout(() => {
-                reject(new Error(`The tab loading timed out after ${secondsToTimeout} seconds.`));
+                reject(new Error(`The tab loading timed out after ${millisecondsToTimeout/1000} seconds.`));
             }, millisecondsToTimeout);
         });
 
