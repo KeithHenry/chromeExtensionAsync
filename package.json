@@ -27,6 +27,5 @@
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "npx": "^10.2.0"
-  },
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" }
+  }
 }
