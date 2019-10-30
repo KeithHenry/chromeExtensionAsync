@@ -159,7 +159,9 @@ This relies on a `chrome.runtime.onMessage.addListener` subscription, so it will
 
 ### Create and Reload Tabs with `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait`
 
-The normal `chrome.tabs.create` and `chrome.tabs.reload` functions execute their callbacks before the tab is finished loading. This makes it difficult to create or reload a tab, and then execute a content script on the page.  `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait` are an enhancement to the tabs API that waits until the tab has finished loading the url, and is ready to execute scripts.  They pair great with `chrome.tabs.executeAsyncFunction`. They:
+New in v3.4 is `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait`. The normal `chrome.tabs.create` and `chrome.tabs.reload` functions execute their callbacks as soon as the tab is created, before the tab has finished loading. This makes it difficult to create or reload a tab, and then execute a content script on the page. `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait` are an enhancement to the tabs API that waits until the tab has finished loading the url, and is ready to execute scripts. They pair great with `chrome.tabs.executeAsyncFunction`. 
+
+They:
 
 - Call `chrome.tabs.create` or `chrome.tabs.reload`, await the results, and grab the tab's id.
 - Use `chrome.tabs.onUpdated.addListener` to listen for the 'completed' status for the tab's id.
@@ -267,6 +269,12 @@ Sometimes your application has a build process that requires you to use 3rd part
 For example, [create-react-app](https://github.com/facebook/create-react-app) will [break the build and minification process](https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/template/README.md#npm-run-build-fails-to-minify) if one of your dependencies is not published as standard `ES5` code.  
 
 ## Release Notes
+
+### v3.4
+v3.4 adds `chrome.tabs.createAndWait` and `chrome.tabs.reloadAndWait`; this is backwards compatible and opt-in functionality.
+
+#### v3.4.1
+Fixes an issue with the timeout message.
 
 ### v3.3
 v3.3 adds `execute-async-function.es5.js` transpiled ES5 version for toolchains that depend on the older JS syntax.
