@@ -31,7 +31,7 @@
             return new Promise((resolve, reject) => {
                 try {
                     // Try to run the original function, with the trimmed args list
-                    f(...safeArgs, (...cbArgs) => {
+                    const ret = f(...safeArgs, (...cbArgs) => {
 
                         // If a callback was passed at the end of the original arguments
                         if (callback) {
@@ -50,7 +50,7 @@
                                 resolve(cbObj);
                             }
                             else if (!cbArgs || cbArgs.length === 0)
-                                resolve();
+                                resolve(ret); // if there were no callback args, resolve with the function's own return value
                             else if (cbArgs.length === 1)
                                 resolve(cbArgs[0]);
                             else
@@ -155,7 +155,7 @@
             { n: 'camera', props: knownInContentSetting },
             { n: 'unsandboxedPlugins', props: knownInContentSetting },
             { n: 'automaticDownloads', props: knownInContentSetting }],
-        contextMenus: ['update', 'remove', 'removeAll'], /* 'create' omitted intentionally, it does not follow standard asynchronous pattern */
+        contextMenus: ['create', 'update', 'remove', 'removeAll'],
         cookies: ['get', 'getAll', 'set', 'remove', 'getAllCookieStores'],
         debugger: ['attach', 'detach', 'sendCommand', 'getTargets'],
         desktopCapture: ['chooseDesktopMedia'],
