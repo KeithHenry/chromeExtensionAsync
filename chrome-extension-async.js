@@ -155,7 +155,7 @@
             { n: 'camera', props: knownInContentSetting },
             { n: 'unsandboxedPlugins', props: knownInContentSetting },
             { n: 'automaticDownloads', props: knownInContentSetting }],
-        contextMenus: ['create', 'update', 'remove', 'removeAll'],
+        contextMenus: ['update', 'remove', 'removeAll'], /* 'create' omitted intentionally, it does not follow standard asynchronous pattern */
         cookies: ['get', 'getAll', 'set', 'remove', 'getAllCookieStores'],
         debugger: ['attach', 'detach', 'sendCommand', 'getTargets'],
         desktopCapture: ['chooseDesktopMedia'],
