@@ -3306,13 +3306,13 @@ declare namespace chrome.i18n {
 
     /** Holds detected ISO language code and its percentage in the input string */
     interface DetectedLanguage {
-        /** An ISO language code such as 'en' or 'fr'. 
-         * For a complete list of languages supported by this method, see  [kLanguageInfoTable]{@link https://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/languages/internal/languages.cc}. 
+        /** An ISO language code such as 'en' or 'fr'.
+         * For a complete list of languages supported by this method, see  [kLanguageInfoTable]{@link https://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/languages/internal/languages.cc}.
          * For an unknown language, 'und' will be returned, which means that [percentage] of the text is unknown to CLD */
         language: string;
 
         /** The percentage of the detected language */
-        percentage: number; 
+        percentage: number;
     }
 
     /** Holds detected language reliability and array of DetectedLanguage */
@@ -3428,7 +3428,7 @@ declare namespace chrome.identity {
      * If you specify the callback parameter, it should be a function that looks like this:
      * function(string token) {...};
      */
-    export function getAuthToken(details: TokenDetails, callback?: (token: string) => void): Promise<string>;
+    export function getAuthToken(details: TokenDetails, callback?: (token?: string, grantedScopes?: string[]) => void): Promise<[string?, string[]?]>;
     /**
      * Retrieves email address and obfuscated gaia id of the user signed into a profile.
      * This API is different from identity.getAccounts in two ways. The information returned is available offline, and it only applies to the primary account for the profile.
@@ -5605,7 +5605,7 @@ declare namespace chrome.storage {
 ////////////////////
 // Socket
 ////////////////////
-/** Use the chrome.socket API to send and receive data over the network using TCP and UDP connections. 
+/** Use the chrome.socket API to send and receive data over the network using TCP and UDP connections.
  * Note: Starting with Chrome 33, this API is deprecated in favor of the sockets.udp, sockets.tcp and sockets.tcpServer APIs.
  * @since Chrome 24.
  * @deprecated Chrome 33. */
